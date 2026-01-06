@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Good Night</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: "Georgia", "Times New Roman", serif;
+        }
+
+        /* ===== 初始渐变背景 ===== */
+        .gradient-bg {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(120deg, #cfe9ff, #e6d9ff);
+            animation: gradientFlow 10s ease infinite;
+            z-index: -3;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            50% {
+                filter: hue-rotate(15deg);
+            }
+
+            100% {
+                filter: hue-rotate(0deg);
+            }
+        }
+
+        /* ===== 莫奈背景 ===== */
+        .monet-bg {
+            position: fixed;
+            inset: 0;
+            background-image: url("https://upload.wikimedia.org/wikipedia/commons/c/c8/Claude_Monet_-_Water_Lilies%2C_1917-1919.JPG");
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px);
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: -4;
+        }
+
+        /* ===== 初始点击球 ===== */
+        .orb {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 160px;
+            height: 160px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1));
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            animation: orbFlow 6s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        @keyframes orbFlow {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -52%) scale(1.05);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .orb span {
+            font-size: 12px;
+            color: #5c4b3b;
+            letter-spacing: 2px;
+            font-family: "Baskerville", "Georgia", serif;
+            font-variant: small-caps;
+        }
+
+        /* 开始页标题（花字） */
+        .start-title {
+            position: absolute;
+            top: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #3b3126;
+            font-family: "Baskerville", "Georgia", serif;
+            font-size: 20px;
+            letter-spacing: 3px;
+            opacity: 0.9;
+            z-index: 11;
+        }
+
+        /* ===== 主内容 ===== */
+        .content {
+            display: none;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            padding: 6vh 5vw;
+            gap: 4vw;
+        }
+
+        /* ===== 左侧打字机 ===== */
+        .typewriter {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            position: relative;
+            padding-left: 2vw;
+            padding-top: 6vh;
+        }
+
+        .paper {
+            /* 1. 背景透明化，与背景融合 */
+            width: 300px;
+            min-height: 60px;
+            background: transparent;
+            box-shadow: none;
+            padding: 0 6px;
+            font-size: 18px;
+            /* 稍微大一点，更清晰 */
+            line-height: 1.6;
+            color: #1a1a1a;
+            font-family: "Courier New", Courier, monospace;
+            /* 2. 打字机格式 */
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            z-index: 5;
+            margin-bottom: -6px;
+            /* 让字靠近滚轴 */
+            text-align: left;
+        }
+
+        svg {
+            width: 320px;
+            overflow: visible;
+        }
+
+        .key-arm {
+            transform-origin: center;
+            transition: transform 0.1s ease;
+        }
+
+        .hit .key-arm {
+            transform: translateY(4px);
+        }
+
+        /* ===== 右侧文字汇总 ===== */
+        .text-area {
+            flex: 1;
+            /* 4. 缩小字号，代码格式 */
+            font-family: "Consolas", "Monaco", "Menlo", monospace;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            padding-top: 25vh;
+            white-space: pre-wrap;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="gradient-bg"></div>
+    <div class="monet-bg" id="monetBg"></div>
+
+    <div class="start-title" id="startTitle">夜深了 · Good Night</div>
+    <div class="orb" id="startOrb">
+        <span>轻点开始</span>
+    </div>
+
+    <div class="content" id="content">
+
+        <!-- 左侧：打字机 -->
+        <div class="typewriter">
+            <div class="paper" id="paper"></div>
+
+            <!-- 3. 优化左下角打字机的形式：老式打字机，下部键盘，上部显示 -->
+            <svg id="machine" viewBox="0 0 500 300">
+                <!-- 滚轴（在最上方，托着纸） -->
+                <g transform="translate(50, 20)">
+                    <rect x="0" y="0" width="400" height="40" rx="5" fill="#333" />
+                    <rect x="10" y="5" width="380" height="30" rx="3" fill="#111" />
+                    <!-- 滚轴两侧旋钮 -->
+                    <circle cx="-10" cy="20" r="15" fill="#222" />
+                    <circle cx="410" cy="20" r="15" fill="#222" />
+                </g>
+
+                <!-- 机身主体 -->
+                <rect x="40" y="70" width="420" height="130" rx="20" fill="#444" stroke="#222" stroke-width="2" />
+                <rect x="60" y="85" width="380" height="95" fill="#2a2a2a" rx="12" />
+
+                <!-- 键盘区域 -->
+                <g id="keyboard" transform="translate(80, 210)">
+                    <!-- 这里用JS生成按键效果或者简单画几个排 -->
+                    <rect x="-10" y="0" width="360" height="80" rx="10" fill="#111" />
+                    <!-- 第一排键 -->
+                    <circle cx="20" cy="20" r="12" fill="#eee" class="key" /><text x="20" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">ア</text>
+                    <circle cx="50" cy="20" r="12" fill="#eee" class="key" /><text x="50" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">イ</text>
+                    <circle cx="80" cy="20" r="12" fill="#eee" class="key" /><text x="80" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">ウ</text>
+                    <circle cx="110" cy="20" r="12" fill="#eee" class="key" /><text x="110" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">エ</text>
+                    <circle cx="140" cy="20" r="12" fill="#eee" class="key" /><text x="140" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">オ</text>
+                    <circle cx="170" cy="20" r="12" fill="#eee" class="key" /><text x="170" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">カ</text>
+                    <circle cx="200" cy="20" r="12" fill="#eee" class="key" /><text x="200" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">キ</text>
+                    <circle cx="230" cy="20" r="12" fill="#eee" class="key" /><text x="230" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">ク</text>
+                    <circle cx="260" cy="20" r="12" fill="#eee" class="key" /><text x="260" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">ケ</text>
+                    <circle cx="290" cy="20" r="12" fill="#eee" class="key" /><text x="290" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">コ</text>
+                    <circle cx="320" cy="20" r="12" fill="#eee" class="key" /><text x="320" y="24" text-anchor="middle"
+                        font-size="10" fill="#333">サ</text>
+
+                    <!-- 第二排键 -->
+                    <circle cx="35" cy="50" r="12" fill="#eee" class="key" /><text x="35" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">シ</text>
+                    <circle cx="65" cy="50" r="12" fill="#eee" class="key" /><text x="65" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">ス</text>
+                    <circle cx="95" cy="50" r="12" fill="#eee" class="key" /><text x="95" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">セ</text>
+                    <circle cx="125" cy="50" r="12" fill="#eee" class="key" /><text x="125" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">ソ</text>
+                    <circle cx="155" cy="50" r="12" fill="#eee" class="key" /><text x="155" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">タ</text>
+                    <circle cx="185" cy="50" r="12" fill="#eee" class="key" /><text x="185" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">チ</text>
+                    <circle cx="215" cy="50" r="12" fill="#eee" class="key" /><text x="215" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">ツ</text>
+                    <circle cx="245" cy="50" r="12" fill="#eee" class="key" /><text x="245" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">テ</text>
+                    <circle cx="275" cy="50" r="12" fill="#eee" class="key" /><text x="275" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">ト</text>
+                    <circle cx="305" cy="50" r="12" fill="#eee" class="key" /><text x="305" y="54" text-anchor="middle"
+                        font-size="10" fill="#333">ナ</text>
+                </g>
+            </svg>
+        </div>
+
+        <!-- 右侧：汇总文本 -->
+        <div class="text-area" id="finalText"></div>
+
+    </div>
+
+    <script>
+        const startOrb = document.getElementById("startOrb");
+        const monetBg = document.getElementById("monetBg");
+        const content = document.getElementById("content");
+        const startTitle = document.getElementById("startTitle");
+
+        const paper = document.getElementById("paper");
+        const finalText = document.getElementById("finalText");
+        const machine = document.getElementById("machine");
+        const keys = document.querySelectorAll('.key');
+
+        const message = "亲爱的朋友，祝夜好~💐";
+        // 4. 右侧：以代码表达思考过程
+        const codeLines = [
+            "def think():",
+            "    thoughts = [",
+            "        \"又到晚上了，白天很忙也没聊什么话题...\"",
+            "        \"最近天气变凉了...\"",
+            "        \"晚上吃的很撑...\"",
+            "        \"今天是2026年1月6号...\"",
+            "        \"想了很多，话语没有什么固定的形状想要说出来，想了想还是短暂的一句够啦，酱\"",
+            "    ]",
+            "    for t in thoughts:",
+            "        print(t)",
+        ];
+
+        // 2. 左上角打字速度减慢 
+        function delayFor(char) {
+            if ("，。~💐".includes(char)) return 800; // 标点停顿更长 
+            return 300 + Math.random() * 200; // 普通字更慢，模仿思考 
+        }
+
+        async function typeAll() {
+            for (let i = 0; i < message.length; i++)
+            {
+                const char = message[i];
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                randomKey.setAttribute("fill", "#bbb");
+                randomKey.setAttribute("transform", "translate(0, 2)");
+                paper.textContent += char;
+                await new Promise(r => setTimeout(r, delayFor(char)));
+                randomKey.setAttribute("fill", "#eee");
+                randomKey.setAttribute("transform", "translate(0, 0)");
+            }
+        }
+
+        async function renderCodeThinking() {
+            finalText.textContent = "";
+            for (let i = 0; i < codeLines.length; i++)
+            {
+                finalText.textContent += (i === 0 ? "" : "\n") + codeLines[i];
+                await new Promise(r => setTimeout(r, 600));
+            }
+        }
+
+        startOrb.addEventListener("click", async () => {
+            startOrb.style.display = "none";
+            startTitle.style.display = "none";
+            monetBg.style.opacity = 1;
+            content.style.display = "flex";
+            await Promise.all([typeAll(), renderCodeThinking()]);
+        }); 
+    </script>
+
+</body>
+
+</html>
